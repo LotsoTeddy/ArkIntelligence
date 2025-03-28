@@ -1,71 +1,54 @@
 import os
-
 from typing import List
-from typing import Optional
-from arkintelligence.base.network import send_request
-from arkintelligence.config.config import CHAT_COMPLETIONS_TEXT_URL
 
-SUPPORTED_AGENT_TYPE = [
-    'CHAT_TEXT',
-    'CHAT_VIDEO',
-    ]
+from openai import OpenAI
 
-class ArkAgent():
-    
+from arkintelligence.base import api_key_check
+from arkintelligence.config import MODEL_MAPPING
+from arkintelligence.utils.rprint import rlog as log
+
+
+class ArkAgent:
+    @api_key_check
     def __init__(
         self,
-        name: str = 'Undefined',
-        type: str = 'CHAT_TEXT',
-        prompt: str = 'You are an agent that can response user.',
-        tools: List[str] = [],
+        name: str = "Undefined",
+        model: str = "doubao-1.5-pro-32k-250115",
+        prompt: str = "You are an agent that can response user.",
+        tools: List[str] = None,
         knowldgebase: str = None,
     ):
+        log(
+            f"Initializing agent:\n[grey50]Name: {name}\nModel: {model}\nSystem prompt: {prompt}[/grey50]"
+        )
+
         self.name = name
-        self.type = type
+        self.model = model
         self.prompt = prompt
         self.tools = tools
         self.knowldgebase = knowldgebase
-        
-    def run(self, prompt: str):
-        if self.type == 'CHAT_TEXT':
-            return self.chat_text(prompt)
-        elif self.type == 'CHAT_VIDEO':
-            return self.chat_video(prompt)
-        else:
-            raise ValueError(f"Unsupported agent type: {self.type}")
-    
-    def chat_text(self, prompt: str):
-        response = send_request(
-            url=CHAT_COMPLETIONS_TEXT_URL,
-            headers={
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + os.getenv('ARK_API_KEY'),
-            },
-            data={
-                'model': 'doubao-1.5-pro-32k-250115',
-                'messages': [
-                    {
-                        'role': 'system',
-                        'content': self.prompt
-                    },
-                    {
-                        'role': 'user',
-                        'content': prompt
-                    }
-                ],
-            }
+
+        self.base_url = MODEL_MAPPING[model]["url"]
+        self.api_key = os.environ.get("ARK_API_KEY")
+
+        self.client = OpenAI(
+            base_url=self.base_url,
+            api_key=self.api_key,
         )
-        response = response.get('choices')[0].get('message').get('content')
-        if response is None:
-            raise ValueError('Response is None')
-        return response
-    
-    def chat_video(self, prompt: str):
-        # Implement the logic for video chat agent
-        response = f"Video response to: {prompt}"
-        return response
-        
-    
-    
-    
-    
+
+        log(f"Agent {self.name} initialized.")
+
+    def run(self, prompt: str):
+        log(f"Running agent {self.name} with prompt: {prompt}")
+
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": self.prompt},
+                {"role": "user", "content": prompt},
+            ],
+        )
+        log(
+            f"Agent {self.name} response: [grey50]{response.choices[0].message.content}[/grey50]"
+        )
+        return response.choices[0].message.content
