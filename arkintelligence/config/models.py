@@ -16,4 +16,9 @@ MODEL_MAPPING = {
         #     'presence_penalty': 0.0,
         # },
     },
+    "deepseek-v3-250324": {
+        "hook": "CHAT_TEXT",
+        "url": CHAT_COMPLETIONS_TEXT_URL,
+        "description": "Deepseek V3",
+    },
 }

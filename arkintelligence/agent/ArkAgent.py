@@ -1,3 +1,4 @@
+import json
 import os
 from typing import List
 
@@ -5,6 +6,7 @@ from openai import OpenAI
 
 from arkintelligence.base import api_key_check
 from arkintelligence.config import MODEL_MAPPING
+from arkintelligence.tool import ArkTool
 from arkintelligence.utils.rprint import rlog as log
 
 
@@ -36,19 +38,49 @@ class ArkAgent:
             api_key=self.api_key,
         )
 
+        self.messages = [
+            {"role": "system", "content": self.prompt},
+        ]
+
         log(f"Agent {self.name} initialized.")
 
-    def run(self, prompt: str):
-        log(f"Running agent {self.name} with prompt: {prompt}")
+    def _function_calling(self, func, args):
+        args = json.loads(args)
+        return func(**args)
+
+    def _post(self):
+        history_messages_str = "\n".join(str(message) for message in self.messages)
+        log(f"Message history: {history_messages_str}")
 
         response = self.client.chat.completions.create(
             model=self.model,
-            messages=[
-                {"role": "system", "content": self.prompt},
-                {"role": "user", "content": prompt},
-            ],
+            messages=self.messages,
+            # TODO(nkfyz): Need to check whether the tool is already registry.
+            tools=[ArkTool.registry[tool] for tool in self.tools],
         )
-        log(
-            f"Agent {self.name} response: [grey50]{response.choices[0].message.content}[/grey50]"
+
+        if response.choices[0].message.tool_calls is not None:
+            return "function_calling", response
+        else:
+            return "normal", response
+
+    def run(self, prompt: str, role: str = "user", **kwargs):
+        self.messages.append(
+            {"role": role, "content": prompt, **kwargs},
         )
-        return response.choices[0].message.content
+
+        type, response = self._post()
+
+        if type == "function_calling":
+            tool_calls = response.choices[0].message.tool_calls[0]
+            func = ArkTool.function[tool_calls.function.name]
+            args = tool_calls.function.arguments
+            res = self._function_calling(func=func, args=args)
+            self.run(
+                prompt=str(res),
+                role="tool",
+                tool_call_id=tool_calls.id,
+                name=tool_calls.function.name,
+            )
+        elif type == "normal":
+            return response.choices[0].message.content
