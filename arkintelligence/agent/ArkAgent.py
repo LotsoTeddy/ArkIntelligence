@@ -49,8 +49,9 @@ class ArkAgent:
         return func(**args)
 
     def _post(self):
-        history_messages_str = "\n".join(str(message) for message in self.messages)
-        log(f"Message history: {history_messages_str}")
+        log(
+            f"Send: [grey50]{self.messages[-1]['role']}: {self.messages[-1]['content']}[/]"
+        )
 
         response = self.client.chat.completions.create(
             model=self.model,
@@ -58,6 +59,8 @@ class ArkAgent:
             # TODO(nkfyz): Need to check whether the tool is already registry.
             tools=[ArkTool.registry[tool] for tool in self.tools],
         )
+
+        log(f"Recv: [grey50]{response}[/]")
 
         if response.choices[0].message.tool_calls is not None:
             return "function_calling", response
@@ -76,7 +79,7 @@ class ArkAgent:
             func = ArkTool.function[tool_calls.function.name]
             args = tool_calls.function.arguments
             res = self._function_calling(func=func, args=args)
-            self.run(
+            return self.run(
                 prompt=str(res),
                 role="tool",
                 tool_call_id=tool_calls.id,

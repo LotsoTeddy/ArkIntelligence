@@ -34,7 +34,7 @@ def parse_function_info(func):
         "function": {
             "name": name,
             "description": desc,
-            "paramaters": {
+            "parameters": {
                 "type": "object",
                 "properties": {
                     arg.arg_name: {

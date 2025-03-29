@@ -6,28 +6,25 @@ from arkintelligence.tool import ArkTool
 
 
 @ArkTool
-def get_weather(city: str, date: str = "2025-03-19") -> dict:
-    """Get city weather infomation
+def get_subway_status(station: str) -> dict:
+    """Get the status of a specific subway station.
 
     Args:
-        city (str): The name of the city.
-        date (str, optional): The data in the format of YYYY-MM-DD. The default date is the current day.
+        station (str): The name of the subway station.
 
     Returns:
-        dict: the weather infomation
+        dict: the station status
     """
     # Function implementation
-    return {"temprature": "25"}
+    return {"status": "very crowded"}
 
 
 agent = ArkAgent(
     name="Weather reporter",
     model="deepseek-v3-250324",
     prompt="You are a helpful assistant.",
-    tools=["get_weather"],
+    tools=["get_subway_status"],
 )
-res = agent.run("How is the weather in Beijing city?")
+res = agent.run("How is the Dazhongsi subway station status?")
 
-print(
-    res
-)  # My name is Bytedance. And I'm here to assist you with a wide range of questions and information!
+print(f"Response from agent: {res}")
