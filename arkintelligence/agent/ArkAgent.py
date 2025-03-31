@@ -8,6 +8,7 @@ from arkintelligence.base import api_key_check
 from arkintelligence.config import MODEL_MAPPING
 from arkintelligence.tool import ArkTool
 from arkintelligence.utils.rprint import rlog as log
+from arkintelligence.knowledgebase import ArkKnowledgeBase
 
 
 class ArkAgent:
@@ -18,7 +19,7 @@ class ArkAgent:
         model: str = "doubao-1.5-pro-32k-250115",
         prompt: str = "You are an agent that can response user.",
         tools: List[str] = None,
-        knowldgebase: str = None,
+        knowldgebase: ArkKnowledgeBase = None,
     ):
         log(
             f"Initializing agent:\n[grey50]Name: {name}\nModel: {model}\nSystem prompt: {prompt}[/grey50]"
@@ -64,10 +65,17 @@ class ArkAgent:
 
         if response.choices[0].message.tool_calls is not None:
             return "function_calling", response
-        else:
-            return "normal", response
+        return "normal", response
 
     def run(self, prompt: str, role: str = "user", **kwargs):
+        # If user wanna use the knowledge base, we search the knowledge base first.
+        if self.knowldgebase is not None:
+            response = self.knowldgebase.index.as_query_engine().query(prompt)
+            # self.messages.append(
+            #     {"role": "user", "content": prompt},
+            # )
+            return response
+
         self.messages.append(
             {"role": role, "content": prompt, **kwargs},
         )

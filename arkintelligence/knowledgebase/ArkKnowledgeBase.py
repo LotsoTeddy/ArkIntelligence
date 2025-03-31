@@ -1,85 +1,87 @@
 import os
 
-from volcengine.viking_knowledgebase import VikingKnowledgeBaseService
-from volcengine.viking_knowledgebase.common import (
-    EmbddingModelType,
-    FieldType,
-    IndexType,
+from typing import List, Union
+
+from arkintelligence.base import api_key_check
+from arkintelligence.utils.rprint import rlog as log
+from arkintelligence.knowledgebase.ArkLLM import ArkLLM
+from arkintelligence.knowledgebase.ArkEmbedding import ArkEmbedding
+
+from llama_index.core import (
+    VectorStoreIndex,
+    Settings,
+    SimpleDirectoryReader,
 )
 
-from arkintelligence.base import api_key_check, secret_key_check
-from arkintelligence.config import KNOWLEDGEBASE_HOST
-from arkintelligence.utils.rprint import rlog as log
+from arkintelligence.config.knowledgebase import (
+    KB_EMBEDDING_MODEL,
+    KB_EMBEDDING_URL,
+    KB_LLM,
+)
+from arkintelligence.config.models import CHAT_COMPLETIONS_TEXT_URL
 
 
 class ArkKnowledgeBase:
     @api_key_check
-    @secret_key_check
-    def __init__(self):
-        self.host = KNOWLEDGEBASE_HOST
+    def __init__(
+        self,
+        data: Union[str, List],
+        llm: str = KB_LLM,
+        embed_model: str = KB_EMBEDDING_MODEL,
+    ):
         self.api_key = os.environ.get("ARK_API_KEY")
-        self.secret_key = os.environ.get("ARK_SECRET_KEY")
 
-        self.service = VikingKnowledgeBaseService(
-            host=self.host, scheme="https", connection_timeout=30, socket_timeout=30
+        log(f"Knowledge base LLM: {llm}")
+        self.llm = ArkLLM(
+            model_name=llm,
+            base_url=CHAT_COMPLETIONS_TEXT_URL,
+            api_key=self.api_key,
         )
-        self.service.set_ak(self.api_key)
-        self.service.set_sk(self.secret_key)
+        log(f"Knowledge base embed model: {embed_model}")
+        self.embed_model = ArkEmbedding(
+            model=embed_model,
+            api_key=self.api_key,
+            base_url=KB_EMBEDDING_URL,
+        )
 
-        self.collection = None
+        Settings.llm = self.llm
+        Settings.embed_model = self.embed_model
 
-    def create_collection(self, name: str, description: str):
-        """This function is adapted from volcengine python sdk.
-        Create a collection in the knowledgebase.
+        log(f"Loading knowledge base from {data}")
+        self.index = VectorStoreIndex.from_documents(
+            documents=self._document_generator(data),
+            # show_progress=True,
+        )
 
+    def add_doc(self, data_dir: str):
         """
+        Add a document to the knowledge base.
+        """
+        documents = SimpleDirectoryReader(data_dir).load_data()
+        for document in documents:
+            self.index.insert(document)
 
-        index = {
-            "index_type": IndexType.HNSW_HYBRID,
-            "index_config": {
-                "fields": [
-                    {
-                        "field_name": "chunk_len",
-                        "field_type": FieldType.Int64,
-                        "default_val": 32,
-                    }
-                ],
-                "cpu_quota": 1,
-                "embedding_model": EmbddingModelType.EmbeddingModelBgeLargeZhAndM3,
-            },
-        }
-        preprocessing = {
-            "chunk_length": 200,
-        }
+    def as_retriever(self):
+        # return self.index.as_query_engine(llm=self.llm)
+        return self.index.as_retriever()
 
-        collection = self.service.create_collection(
-            collection_name=name,
-            description=description,
-            index=index,
-            preprocessing=preprocessing,
-        )
+    def as_serve(self):
+        return self.index.as_query_engine(llm=self.llm)
 
-        if collection is not None:
-            self.collection = collection
-            log(f"Create collection {name} successfully.")
-
-    def add_doc(self, path: str):
-        my_collection = self.service.get_collection("knowldegebase0330")
-        my_collection.add_doc(path, tos_path=path)
-
-        url = ""
-        my_collection.add_doc(
-            project="example_project",
-            add_type="url",
-            doc_id="",
-            doc_name="",
-            doc_type="",
-            url=url,
-        )
-
-    def search_knowledgebase(query: str):
-        pass
-
-
-# kb = ArkKnowledgeBase()
-# kb.create_collection(name="knowldegebase0330", description="test knowldegebase on 0330")
+    def _document_generator(self, data):
+        if type(data) == str:
+            if os.path.isdir(data):
+                data_dir = data
+                documents = SimpleDirectoryReader(data_dir).load_data()
+            elif os.path.isfile(data):
+                documents = SimpleDirectoryReader(input_files=[data]).load_data()
+        elif type(data) == list:
+            documents = []
+            for file in data:
+                if os.path.isfile(file):
+                    documents += SimpleDirectoryReader(input_files=[file]).load_data()
+                elif os.path.isdir(file):
+                    documents += SimpleDirectoryReader(file).load_data()
+        else:
+            raise ValueError("Data must be a list or a string")
+        return documents
