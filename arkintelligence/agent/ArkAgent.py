@@ -2,13 +2,12 @@ import json
 import os
 from typing import List
 
-from openai import OpenAI
-
 from arkintelligence.base import api_key_check
 from arkintelligence.config import MODEL_MAPPING
+from arkintelligence.knowledgebase import ArkKnowledgeBase
 from arkintelligence.tool import ArkTool
 from arkintelligence.utils.rprint import rlog as log
-from arkintelligence.knowledgebase import ArkKnowledgeBase
+from openai import OpenAI
 
 
 class ArkAgent:

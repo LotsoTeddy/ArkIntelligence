@@ -1,10 +1,7 @@
-from llama_index.core.base.embeddings.base import BaseEmbedding
 import requests
-from llama_index.core.bridge.pydantic import (
-    Field,
-)
-
 from arkintelligence.config.knowledgebase import KB_EMBEDDING_MODEL, KB_EMBEDDING_URL
+from llama_index.core.base.embeddings.base import BaseEmbedding
+from llama_index.core.bridge.pydantic import Field
 
 
 class ArkEmbedding(BaseEmbedding):

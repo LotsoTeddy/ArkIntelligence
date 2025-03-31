@@ -1,24 +1,17 @@
 import os
-
 from typing import List, Union
 
 from arkintelligence.base import api_key_check
-from arkintelligence.utils.rprint import rlog as log
-from arkintelligence.knowledgebase.ArkLLM import ArkLLM
-from arkintelligence.knowledgebase.ArkEmbedding import ArkEmbedding
-
-from llama_index.core import (
-    VectorStoreIndex,
-    Settings,
-    SimpleDirectoryReader,
-)
-
 from arkintelligence.config.knowledgebase import (
     KB_EMBEDDING_MODEL,
     KB_EMBEDDING_URL,
     KB_LLM,
 )
 from arkintelligence.config.models import CHAT_COMPLETIONS_TEXT_URL
+from arkintelligence.knowledgebase.ArkEmbedding import ArkEmbedding
+from arkintelligence.knowledgebase.ArkLLM import ArkLLM
+from arkintelligence.utils.rprint import rlog as log
+from llama_index.core import Settings, SimpleDirectoryReader, VectorStoreIndex
 
 
 class ArkKnowledgeBase:

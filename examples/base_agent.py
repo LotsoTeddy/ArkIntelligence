@@ -1,8 +1,8 @@
 import os
 
 from arkintelligence.agent import ArkAgent
-from arkintelligence.tool import ArkTool
 from arkintelligence.knowledgebase import ArkKnowledgeBase
+from arkintelligence.tool import ArkTool
 
 # Set your API key here
 # os.environ['ARK_API_KEY'] = ''
