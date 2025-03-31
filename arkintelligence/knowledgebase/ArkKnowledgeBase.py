@@ -40,7 +40,7 @@ class ArkKnowledgeBase:
         Settings.llm = self.llm
         Settings.embed_model = self.embed_model
 
-        log(f"Loading knowledge base from {data}")
+        log(f"Building knowledge base from {data}")
         self.index = VectorStoreIndex.from_documents(
             documents=self._document_generator(data),
             # show_progress=True,
