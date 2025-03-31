@@ -17,7 +17,7 @@ class ArkAgent:
         name: str = "Undefined",
         model: str = "doubao-1.5-pro-32k-250115",
         prompt: str = "You are an agent that can response user.",
-        tools: List[str] = None,
+        tools: List[str] = [],
         knowldgebase: ArkKnowledgeBase = None,
     ):
         log(
