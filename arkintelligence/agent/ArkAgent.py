@@ -3,7 +3,9 @@ import os
 from typing import List
 
 from arkintelligence.base import api_key_check
+from arkintelligence.base.prompts import RAG_PROMPT
 from arkintelligence.config import MODEL_MAPPING
+from arkintelligence.config.knowledgebase import RAG_SCORE_THRESHOLD
 from arkintelligence.knowledgebase import ArkKnowledgeBase
 from arkintelligence.tool import ArkTool
 from arkintelligence.utils.rprint import rlog as log
@@ -14,9 +16,9 @@ class ArkAgent:
     @api_key_check
     def __init__(
         self,
-        name: str = "Undefined",
+        name: str = "Base agent",
         model: str = "doubao-1.5-pro-32k-250115",
-        prompt: str = "You are an agent that can response user.",
+        prompt: str = "You are an agent that can try your best to help user.",
         tools: List[str] = [],
         knowldgebase: ArkKnowledgeBase = None,
     ):
@@ -29,6 +31,7 @@ class ArkAgent:
         self.prompt = prompt
         self.tools = tools
         self.knowldgebase = knowldgebase
+        self.retrieved = False
 
         self.base_url = MODEL_MAPPING[model]["url"]
         self.api_key = os.environ.get("ARK_API_KEY")
@@ -39,7 +42,10 @@ class ArkAgent:
         )
 
         self.messages = [
-            {"role": "system", "content": self.prompt},
+            {
+                "role": "system",
+                "content": self.prompt,
+            }
         ]
 
         log(f"Agent {self.name} initialized.")
@@ -66,18 +72,25 @@ class ArkAgent:
             return "function_calling", response
         return "normal", response
 
-    def run(self, prompt: str, role: str = "user", **kwargs):
-        # If user wanna use the knowledge base, we search the knowledge base first.
-        if self.knowldgebase is not None:
-            response = self.knowldgebase.index.as_query_engine().query(prompt)
-            # self.messages.append(
-            #     {"role": "user", "content": prompt},
-            # )
-            return response
+    def _rag(self, query: str):
+        response = self.knowldgebase.as_serve().query(query)
+        if (
+            len(response.source_nodes) == 0
+            or response.source_nodes[0].score < RAG_SCORE_THRESHOLD
+        ):
+            return False, ""
+        return True, response.response
 
+    def run(self, prompt: str, role: str = "user", **kwargs):
         self.messages.append(
             {"role": role, "content": prompt, **kwargs},
         )
+
+        # If user wanna use the knowledge base, we search the knowledge base first.
+        if self.knowldgebase is not None:
+            is_success, response = self._rag(prompt)
+            if is_success:
+                return response
 
         type, response = self._post()
 

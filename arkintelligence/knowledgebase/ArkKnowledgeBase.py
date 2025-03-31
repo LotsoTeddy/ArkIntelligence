@@ -62,6 +62,7 @@ class ArkKnowledgeBase:
         return self.index.as_query_engine(llm=self.llm)
 
     def _document_generator(self, data):
+        documents = []
         if type(data) == str:
             if os.path.isdir(data):
                 data_dir = data
@@ -69,7 +70,6 @@ class ArkKnowledgeBase:
             elif os.path.isfile(data):
                 documents = SimpleDirectoryReader(input_files=[data]).load_data()
         elif type(data) == list:
-            documents = []
             for file in data:
                 if os.path.isfile(file):
                     documents += SimpleDirectoryReader(input_files=[file]).load_data()

@@ -16,7 +16,6 @@ def get_subway_status(station: str) -> dict:
     return {"status": "very crowded"}
 
 
-# ====== 1. Demo for function calling ======
 agent = ArkAgent(
     name="Station status reporter",
     model="deepseek-v3-250324",

@@ -9,12 +9,11 @@ my_knowledge_base = ArkKnowledgeBase(
     )
 )
 
-# ====== 2. Demo for knowledge base ======
 agent = ArkAgent(
     name="Knowledge base agent",
     model="deepseek-v3-250324",
     prompt="You are a helpful assistant.",
     knowldgebase=my_knowledge_base,
 )
-res = agent.run("Please help me to summary the SmartVM, and list its cons and pros.")
-print(f"Response from agent: {res}")
+res = agent.run("What is the capital of Bazhou?")
+print(f"Response from agent:\n{res}")
