@@ -75,6 +75,7 @@ class ArkAgent:
 
     # TODO(nkfyz): Reconstruct the run function. According to the arguments, we need to invoke _run_with_rag, _run_with_fc, and _run_with_internet, etc. The run function only execute the normal model query.
     def run(self, prompt: str, role: str = "user", **kwargs):
+        # Once receive a prompt, we need to append it to the context
         self.messages.append(
             {"role": role, "content": prompt, **kwargs},
         )
@@ -107,7 +108,7 @@ class ArkAgent:
                 name=tool_calls.function.name,
             )
         elif type == "normal":
-            logger.critical(f"Final response: {response.choices[0].message.content}")
+            logger.debug(f"Final response: {response.choices[0].message.content}")
             return response.choices[0].message.content
 
     def _refine_prompt(self, prompt: str):

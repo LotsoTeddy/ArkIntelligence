@@ -13,6 +13,7 @@ logger.level("CRITICAL", color="<fg magenta>")
 logger.add(
     sys.stderr,
     format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <green>{file}</green>:<green>{line}</green> - <level>{message}</level>",
+    level="CRITICAL",
 )
 
 __all__ = ["logger"]
