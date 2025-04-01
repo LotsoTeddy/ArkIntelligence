@@ -31,11 +31,13 @@ from arkintelligence.model import ArkModel
 # print(response)
 
 # ======== 4. Video generation ========
+REF_IMAGE_PATH = "/root/ArkIntelligence/tutorial/assets/images/cat.png"
 model = ArkModel(
     model="doubao-seaweed-241128",  # Use video generation model here
 )
 
-response = model.chat(
-    prompt="Please describe this image with details.",
+response = model.generate_video(
+    prompt="Please generate a video with a cat running.",
+    attachment=REF_IMAGE_PATH,
 )
-print(response)
+print("Generated video url is: " + response)

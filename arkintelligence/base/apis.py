@@ -29,8 +29,36 @@ def post_to_text_model(
     return response
 
 
-def post_to_vision_model():
-    pass
+def post_to_vision_model(
+    model: str,
+    messages: List[dict],
+):
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f'Bearer {os.environ.get("ARK_API_KEY")}',
+    }
+    data = {
+        "model": model,
+        "content": messages,
+    }
+    response = requests.post(
+        url=MODEL_URL_MAPPING[model],
+        headers=headers,
+        json=data,
+    )
+    return response
+
+
+def check_video_generation_status(task_id: str):
+    header = {
+        "Content-Type": "application/json",
+        "Authorization": f'Bearer {os.environ.get("ARK_API_KEY")}',
+    }
+    url = (
+        f"https://ark.cn-beijing.volces.com/api/v3/contents/generations/tasks/{task_id}"
+    )
+    response = requests.get(url=url, headers=header)
+    return response
 
 
 def post_to_embed_model():
