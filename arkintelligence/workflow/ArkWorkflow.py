@@ -34,19 +34,16 @@ class ArkWorkflow:
         """
         tmp_input = prompt
 
-        pass
 
     def add_node(self, node):
         """
         Adds a node to the workflow.
         """
-        pass
 
     def print(self):
         """
         Prints the workflow.
         """
-        pass
 
 
 ArkWorkflow(node_list=["123"])

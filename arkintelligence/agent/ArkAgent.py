@@ -1,15 +1,12 @@
 import json
-import os
 from typing import List
 
 from arkintelligence.base import api_key_check
-from arkintelligence.base.prompts import RAG_PROMPT
-from arkintelligence.config import MODEL_MAPPING
-from arkintelligence.config.knowledgebase import RAG_SCORE_THRESHOLD
+from arkintelligence.base.apis import post_to_text_model
 from arkintelligence.knowledgebase import ArkKnowledgeBase
+from arkintelligence.model import ArkModel
 from arkintelligence.tool import ArkTool
 from arkintelligence.utils.logger import logger
-from openai import OpenAI
 
 
 class ArkAgent:
@@ -21,23 +18,18 @@ class ArkAgent:
         prompt: str = "You are an agent that can try your best to help user.",
         tools: List[str] = [],
         knowldgebase: ArkKnowledgeBase = None,
+        enable_prompt_refine: bool = False,
+        enable_context: bool = False,
     ):
         logger.info(f"Initializing [{name}] agent with model [{model}]")
 
         self.name = name
-        self.model = model
-        self.prompt = prompt
+        self.model = ArkModel(model=model)
+        self.prompt = f"Your name is {name}." + prompt
         self.tools = tools
         self.knowldgebase = knowldgebase
+        self.enable_prompt_refine = enable_prompt_refine
         self.retrieved = False
-
-        self.base_url = MODEL_MAPPING[model]["url"]
-        self.api_key = os.environ.get("ARK_API_KEY")
-
-        self.client = OpenAI(
-            base_url=self.base_url,
-            api_key=self.api_key,
-        )
 
         self.messages = [
             {
@@ -51,14 +43,14 @@ class ArkAgent:
         return func(**args)
 
     def _post(self):
+        if self.enable_prompt_refine:
+            self.messages[-1]["content"] = self._refine_prompt(
+                self.messages[-1]["content"]
+            )
+
         logger.debug(f"{self.messages[-1]['role']}: {self.messages[-1]['content']}")
 
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=self.messages,
-            # TODO(nkfyz): Need to check whether the tool is already registry.
-            tools=[ArkTool.registry[tool] for tool in self.tools],
-        )
+        response = self.model.invoke(self.messages)
 
         logger.debug(f"assistant: {response}")
 
@@ -81,6 +73,7 @@ class ArkAgent:
 
         return references
 
+    # TODO(nkfyz): Reconstruct the run function. According to the arguments, we need to invoke _run_with_rag, _run_with_fc, and _run_with_internet, etc. The run function only execute the normal model query.
     def run(self, prompt: str, role: str = "user", **kwargs):
         self.messages.append(
             {"role": role, "content": prompt, **kwargs},
@@ -116,3 +109,6 @@ class ArkAgent:
         elif type == "normal":
             logger.critical(f"Final response: {response.choices[0].message.content}")
             return response.choices[0].message.content
+
+    def _refine_prompt(self, prompt: str):
+        return prompt
