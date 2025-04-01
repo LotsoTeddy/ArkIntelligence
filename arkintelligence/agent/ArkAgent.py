@@ -8,7 +8,7 @@ from arkintelligence.config import MODEL_MAPPING
 from arkintelligence.config.knowledgebase import RAG_SCORE_THRESHOLD
 from arkintelligence.knowledgebase import ArkKnowledgeBase
 from arkintelligence.tool import ArkTool
-from arkintelligence.utils.rprint import rlog as log
+from arkintelligence.utils.logger import logger
 from openai import OpenAI
 
 
@@ -22,9 +22,7 @@ class ArkAgent:
         tools: List[str] = [],
         knowldgebase: ArkKnowledgeBase = None,
     ):
-        log(
-            f"Initializing agent:\n[grey50]Name: {name}\nModel: {model}\nSystem prompt: {prompt}[/grey50]"
-        )
+        logger.info(f"Initializing [{name}] agent with model [{model}]")
 
         self.name = name
         self.model = model
@@ -48,16 +46,12 @@ class ArkAgent:
             }
         ]
 
-        log(f"Agent {self.name} initialized.")
-
     def _function_calling(self, func, args):
         args = json.loads(args)
         return func(**args)
 
     def _post(self):
-        log(
-            f"Send: [grey50]{self.messages[-1]['role']}: {self.messages[-1]['content']}[/]"
-        )
+        logger.debug(f"{self.messages[-1]['role']}: {self.messages[-1]['content']}")
 
         response = self.client.chat.completions.create(
             model=self.model,
@@ -66,7 +60,7 @@ class ArkAgent:
             tools=[ArkTool.registry[tool] for tool in self.tools],
         )
 
-        log(f"Recv: [grey50]{response}[/]")
+        logger.debug(f"assistant: {response}")
 
         if response.choices[0].message.tool_calls is not None:
             return "function_calling", response
@@ -120,4 +114,5 @@ class ArkAgent:
                 name=tool_calls.function.name,
             )
         elif type == "normal":
+            logger.critical(f"Final response: {response.choices[0].message.content}")
             return response.choices[0].message.content

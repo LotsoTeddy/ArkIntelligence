@@ -1,5 +1,6 @@
 import inspect
 
+from arkintelligence.utils.logger import logger
 from docstring_parser import parse
 
 
@@ -26,7 +27,9 @@ def parse_function_info(func):
         desc = long_desc
     else:
         # TODO(LotsoTeddy): Add warning-level log.
-        print("Function desc not provided!")
+        logger.warning(
+            f"Function [{name}] description is not provided, using the default one."
+        )
         desc = "No description provided. Plese understand the function ability according to the function name."
 
     tool = {
@@ -61,7 +64,10 @@ def ArkTool(func):
     if not hasattr(ArkTool, "registry"):
         ArkTool.registry = {}
         ArkTool.function = {}
+
+    logger.info(f"Parsing function [{func.__name__}]")
     tool = parse_function_info(func)
+
     ArkTool.registry[tool["function"]["name"]] = tool
     ArkTool.function[tool["function"]["name"]] = func
     return func

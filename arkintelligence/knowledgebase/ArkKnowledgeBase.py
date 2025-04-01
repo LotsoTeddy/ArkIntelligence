@@ -10,7 +10,7 @@ from arkintelligence.config.knowledgebase import (
 from arkintelligence.config.models import CHAT_COMPLETIONS_TEXT_URL
 from arkintelligence.knowledgebase.ArkEmbedding import ArkEmbedding
 from arkintelligence.knowledgebase.ArkLLM import ArkLLM
-from arkintelligence.utils.rprint import rlog as log
+from arkintelligence.utils.logger import logger
 from llama_index.core import Settings, SimpleDirectoryReader, VectorStoreIndex
 
 
@@ -19,18 +19,27 @@ class ArkKnowledgeBase:
     def __init__(
         self,
         data: Union[str, List],
+        name: str = "Unknown",
+        description: str = "No description",
         llm: str = KB_LLM,
         embed_model: str = KB_EMBEDDING_MODEL,
     ):
+        logger.info(
+            f"Initializing knowledge base [{name}] with LLM [{llm}] and embed model [{embed_model}]"
+        )
+        self.name = name
+        self.description = description
+
         self.api_key = os.environ.get("ARK_API_KEY")
 
-        log(f"Knowledge base LLM: {llm}")
+        logger.info(f"Loading LLM [{llm}]")
         self.llm = ArkLLM(
             model_name=llm,
             base_url=CHAT_COMPLETIONS_TEXT_URL,
             api_key=self.api_key,
         )
-        log(f"Knowledge base embed model: {embed_model}")
+
+        logger.info(f"Loading embed model [{embed_model}]")
         self.embed_model = ArkEmbedding(
             model=embed_model,
             api_key=self.api_key,
@@ -40,7 +49,7 @@ class ArkKnowledgeBase:
         Settings.llm = self.llm
         Settings.embed_model = self.embed_model
 
-        log(f"Building knowledge base from {data}")
+        logger.info(f"Building knowledge base index from {data}")
         self.index = VectorStoreIndex.from_documents(
             documents=self._document_generator(data),
             show_progress=True,

@@ -3,4 +3,5 @@ openai>=1.0
 docstring_parser
 volcengine # support for volcano knowledge base
 llama-index
-rich
+# rich
+loguru

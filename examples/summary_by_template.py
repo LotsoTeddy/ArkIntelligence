@@ -9,7 +9,7 @@ def visit_url(url: str) -> dict:
 
     Args:
         url (str): The URL to visit.
-
+""" """
     Returns:
         dict: The document content.
     """
@@ -31,9 +31,9 @@ def visit_url(url: str) -> dict:
 
 
 kb = ArkKnowledgeBase(
-    # name="Summary templates",
+    name="Summary templates",
+    description="A knowledge base that stores summary template.",
     data="/root/ArkIntelligence/assets/knowledgebase_data/summary_templates/",
-    # description="A knowledge base that stores summary template.",
 )
 
 summary_agent = ArkAgent(
