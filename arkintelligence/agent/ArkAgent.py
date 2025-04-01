@@ -73,13 +73,19 @@ class ArkAgent:
         return "normal", response
 
     def _rag(self, query: str):
-        response = self.knowldgebase.as_serve().query(query)
-        if (
-            len(response.source_nodes) == 0
-            or response.source_nodes[0].score < RAG_SCORE_THRESHOLD
-        ):
-            return False, ""
-        return True, response.response
+        references = ""
+        response = self.knowldgebase.as_retriever().retrieve(query)
+        for i in range(0, len(response)):
+            references += f"""
+            Reference No.{i+1}:
+            filename: {response[i].node.metadata['file_name']}
+            filepath: {response[i].node.metadata['file_path']}
+            text: {response[i].node.get_text()}
+            score: {response[i].score}
+            """
+            references += "\n"
+
+        return references
 
     def run(self, prompt: str, role: str = "user", **kwargs):
         self.messages.append(
@@ -88,9 +94,17 @@ class ArkAgent:
 
         # If user wanna use the knowledge base, we search the knowledge base first.
         if self.knowldgebase is not None:
-            is_success, response = self._rag(prompt)
-            if is_success:
-                return response
+            references = self._rag(prompt)
+            if references != "":
+                self.messages[-1][
+                    "content"
+                ] = f"""
+                {self.messages[-1]["content"]}
+                Please help me to anawer this question based on the following references:
+                {references}
+                The references are retrieved from the knowledge base, and the score represents the confidence of the retrieval.
+                You should judge whether the references are useful or not.
+                """
 
         type, response = self._post()
 

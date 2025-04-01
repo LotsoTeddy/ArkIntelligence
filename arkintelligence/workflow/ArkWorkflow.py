@@ -1,7 +1,8 @@
-from typing import List, Union
+from __future__ import annotations
 
-from arkintelligence.agent import ArkAgent
-from arkintelligence.workflow import ArkWorkflow
+from typing import Any, Callable, List, Union
+
+from arkintelligence.agent.ArkAgent import ArkAgent
 
 
 class ArkWorkflow:
@@ -14,19 +15,25 @@ class ArkWorkflow:
         self,
         name: str = "Unknown",
         description: str = "No description",
-        node_list: List[Union[ArkWorkflow, ArkAgent]] = [],
+        node_list: List[Union[ArkAgent, ArkWorkflow, Callable[..., Any]]] = [],
     ):
         """
         Initializes the ArkWorkFlow instance.
         """
         self.name = name
         self.description = description
+
+        # Note that the nodes are sequential
         self.node_list = node_list
 
-    def run(self):
+        self.print()
+
+    def run(self, prompt: str):
         """
         Runs the workflow.
         """
+        tmp_input = prompt
+
         pass
 
     def add_node(self, node):
@@ -34,3 +41,12 @@ class ArkWorkflow:
         Adds a node to the workflow.
         """
         pass
+
+    def print(self):
+        """
+        Prints the workflow.
+        """
+        pass
+
+
+ArkWorkflow(node_list=["123"])

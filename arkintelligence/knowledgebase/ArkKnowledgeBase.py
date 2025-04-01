@@ -43,7 +43,7 @@ class ArkKnowledgeBase:
         log(f"Building knowledge base from {data}")
         self.index = VectorStoreIndex.from_documents(
             documents=self._document_generator(data),
-            # show_progress=True,
+            show_progress=True,
         )
 
     def add_doc(self, data_dir: str):
