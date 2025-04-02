@@ -53,7 +53,13 @@ class ArkAgent:
 
         logger.debug(f"{self.messages[-1]['role']}: {self.messages[-1]['content']}")
 
-        response = self.model.invoke(self.messages)
+        if self.tools != []:
+            response = self.model.invoke_with_tools(
+                messages=self.messages,
+                tools=[ArkTool.registry[tool] for tool in self.tools],
+            )
+        else:
+            response = self.model.invoke(self.messages)
 
         logger.debug(f"assistant: {response}")
 

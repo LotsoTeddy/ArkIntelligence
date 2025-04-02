@@ -15,7 +15,7 @@ from openai import OpenAI
 def post_to_text_model(
     model: str,
     messages: List[dict],
-    tools: List = [],
+    tools=[],
 ):
     client = OpenAI(
         base_url=MODEL_URL_MAPPING[model],

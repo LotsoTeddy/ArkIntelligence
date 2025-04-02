@@ -157,6 +157,16 @@ class ArkModel:
         )
         return response
 
+    def invoke_with_tools(
+        self, tools: List[str] = [], messages: List = [], context: str = None
+    ):
+        response = post_to_text_model(
+            model=self.model,
+            messages=messages,
+            tools=tools,
+        )
+        return response
+
     def _process_attachment(self, attachment: str):
         if attachment is not None:
             if not is_image(attachment):
