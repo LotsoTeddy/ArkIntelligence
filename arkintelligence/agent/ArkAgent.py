@@ -4,7 +4,6 @@ from typing import List
 from arkintelligence.base import api_key_check
 from arkintelligence.base.apis import post_to_text_model
 from arkintelligence.knowledgebase import ArkKnowledgeBase
-from arkintelligence.model import ArkModel
 from arkintelligence.tool import ArkTool
 from arkintelligence.utils.logger import logger
 
@@ -22,8 +21,11 @@ class ArkAgent:
         enable_context: bool = False,
     ):
         logger.info(f"Initializing [{name}] agent with model [{model}]")
-
         self.name = name
+
+        # NOTE(LotsoTeddy): We import ArkModel here to avoid circular import
+        from arkintelligence.model import ArkModel
+
         self.model = ArkModel(model=model)
         self.prompt = f"Your name is {name}." + prompt
         self.tools = tools
