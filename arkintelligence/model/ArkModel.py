@@ -23,10 +23,6 @@ class ArkModel:
         if self.enable_context:
             self.context_mgr = ArkContext()
             self.context_mgr.create_context()
-        else:
-            logger.warning(
-                f"Model context is disabled, the chat performance will be poor."
-            )
 
     # NOTE(LotsoTeddy): This function only return the text content of the response.
     def chat(self, prompt: str, attachment: Union[str, List[str]] = None):
@@ -86,6 +82,11 @@ class ArkModel:
         ratio: str = "16:9",
         duration: int = 5,
     ):
+        if self.enable_context:
+            logger.warning(
+                f"Video generation is not supported in context mode. The context will not be saved."
+            )
+
         if self.model != "doubao-seaweed-241128":
             logger.error(
                 f"Model [{self.model}] does not support video generation, please check the model name."
@@ -126,3 +127,11 @@ class ArkModel:
             if status.get("status") == "succeeded":
                 return status.get("content").get("video_url")
             time.sleep(3)
+
+    def _process_attachment(self, attachment: str):
+        if attachment is not None:
+            if not is_image(attachment):
+                logger.error(f"Attachment is not an image, please check the file path.")
+                return None
+            attachment = encode_image(attachment)
+        return attachment
