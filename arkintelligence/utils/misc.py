@@ -8,6 +8,8 @@ def is_image(file_path: str) -> bool:
     :param file_path: Path to the file.
     :return: True if the file is an image, False otherwise.
     """
+    if file_path.startswith("http"):
+        return True
     # Validate the file path
     if not os.path.isfile(file_path):
         raise ValueError(f"File path {file_path} is not valid.")
@@ -20,6 +22,8 @@ def is_image(file_path: str) -> bool:
 
 
 def encode_image(image_path):
+    if image_path.startswith("http"):
+        return image_path
     code = ""
     with open(image_path, "rb") as image_file:
         code = base64.b64encode(image_file.read()).decode("utf-8")
