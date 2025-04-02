@@ -19,6 +19,7 @@ class ArkAgent:
         knowldgebase: ArkKnowledgeBase = None,
         enable_prompt_refine: bool = False,
         enable_context: bool = False,
+        refine_requirement: str = "",
     ):
         logger.info(f"Initializing [{name}] agent with model [{model}]")
         self.name = name

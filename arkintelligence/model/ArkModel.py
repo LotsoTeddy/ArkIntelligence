@@ -1,7 +1,7 @@
 import time
 from typing import List, Union
 
-from arkintelligence.agent import ArkContext
+from arkintelligence.agent import ArkContext, handle_context
 from arkintelligence.base import api_key_check
 from arkintelligence.base.apis import (
     check_video_generation_status,
@@ -21,11 +21,40 @@ class ArkModel:
 
         self.context_mgr = None
         if self.enable_context:
-            self.context_mgr = ArkContext()
-            self.context_mgr.create_context()
+            self._create_context_mgr()
 
-    # NOTE(LotsoTeddy): This function only return the text content of the response.
-    def chat(self, prompt: str, attachment: Union[str, List[str]] = None):
+    def _create_context_mgr(self):
+        self.context_mgr = ArkContext()
+        self.context_mgr.create_context()
+
+    def _chat(self, messages):
+        response = post_to_text_model(
+            model=self.model,
+            messages=messages,
+        )
+        return response.choices[0].message.content
+
+    def _process_image():
+        pass
+
+    def _generate_video():
+        pass
+
+    def chat(self, prompt: str, attachment: str = None):
+        if self.enable_context:
+            self.context_mgr.add_to_context(role="user", content=prompt)
+            messages = self.context_mgr.get_context()
+        else:
+            messages = [{"role": "user", "content": prompt}]
+
+        response = self._chat(messages=messages)
+
+        if self.enable_context:
+            self.context_mgr.add_to_context(role="assistant", content=response)
+
+        return response
+
+    def process_image(self, prompt: str, attachment: Union[str, List[str]] = None):
         # NOTE(LotsoTeddy): Extract the following code to a function
         if attachment is not None:
             _attachment = attachment
@@ -66,14 +95,6 @@ class ArkModel:
                 role="assistant", content=response.choices[0].message.content
             )
         return response.choices[0].message.content
-
-    # NOTE(LotsoTeddy): This function return the whole response, the invoker should parse the response manually.
-    def invoke(self, messages: List = [], context: str = None):
-        response = post_to_text_model(
-            model=self.model,
-            messages=messages,
-        )
-        return response
 
     def generate_video(
         self,
@@ -127,6 +148,14 @@ class ArkModel:
             if status.get("status") == "succeeded":
                 return status.get("content").get("video_url")
             time.sleep(3)
+
+    # NOTE(LotsoTeddy): This function return the whole response, the invoker should parse the response manually.
+    def invoke(self, messages: List = [], context: str = None):
+        response = post_to_text_model(
+            model=self.model,
+            messages=messages,
+        )
+        return response
 
     def _process_attachment(self, attachment: str):
         if attachment is not None:

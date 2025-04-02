@@ -30,3 +30,16 @@ class ArkContext:
             )
             role = "user"
         self.messages.append({"role": role, "content": content})
+
+
+def handle_context(func):
+    def wrapper(*args, **kwargs):
+        if args[0].agent.enable_context:
+            context = args[0].agent.context_mgr
+            if context is None:
+                context = ArkContext()
+                context.create_context()
+            args[0].agent.context_mgr = context
+        return func(*args, **kwargs)
+
+    return wrapper
