@@ -27,12 +27,22 @@ class ArkModel:
         self.context_mgr = ArkContext()
         self.context_mgr.create_context()
 
-    def _chat(self, messages):
+    def _chat(self, messages, **kwargs):
         response = post_to_text_model(
             model=self.model,
             messages=messages,
+            **kwargs,
         )
-        return response.choices[0].message.content
+
+        stream = kwargs.get("stream", False)
+        if stream:
+            for chunk in response:
+                if not chunk.choices:
+                    continue
+                print(chunk.choices[0].delta.content, end="")
+            return ""
+        else:
+            return response.choices[0].message.content
 
     def _process_image():
         pass
@@ -40,14 +50,14 @@ class ArkModel:
     def _generate_video():
         pass
 
-    def chat(self, prompt: str, attachment: str = None):
+    def chat(self, prompt: str, attachment: str = None, **kwargs):
         if self.enable_context:
             self.context_mgr.add_to_context(role="user", content=prompt)
             messages = self.context_mgr.get_context()
         else:
             messages = [{"role": "user", "content": prompt}]
 
-        response = self._chat(messages=messages)
+        response = self._chat(messages=messages, **kwargs)
 
         if self.enable_context:
             self.context_mgr.add_to_context(role="assistant", content=response)

@@ -12,11 +12,7 @@ from openai import OpenAI
 
 
 @api_key_check
-def post_to_text_model(
-    model: str,
-    messages: List[dict],
-    tools=[],
-):
+def post_to_text_model(model: str, messages: List[dict], tools=[], **kwargs):
     client = OpenAI(
         base_url=MODEL_URL_MAPPING[model],
         api_key=os.environ.get("ARK_API_KEY"),
@@ -25,6 +21,7 @@ def post_to_text_model(
         model=model,
         messages=messages,
         tools=tools,
+        **kwargs,
     )
     return response
 
