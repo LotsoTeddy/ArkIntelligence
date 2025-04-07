@@ -5,7 +5,6 @@ import requests
 from arkintelligence.base import api_key_check
 from arkintelligence.config import MODEL_URL_MAPPING
 from arkintelligence.config.urls import CONTEXT_API_BASE_URL
-from arkintelligence.utils.logger import logger
 from openai import OpenAI
 
 # ======== 1. model related apis ========

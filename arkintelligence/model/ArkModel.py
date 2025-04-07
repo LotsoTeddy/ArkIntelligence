@@ -1,7 +1,7 @@
 import time
 from typing import List, Union
 
-from arkintelligence.agent import ArkContext, handle_context
+from arkintelligence.agent import ArkContext
 from arkintelligence.base import api_key_check
 from arkintelligence.base.apis import (
     check_video_generation_status,

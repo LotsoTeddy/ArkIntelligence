@@ -2,7 +2,6 @@ import json
 from typing import List
 
 from arkintelligence.base import api_key_check
-from arkintelligence.base.apis import post_to_text_model
 from arkintelligence.knowledgebase import ArkKnowledgeBase
 from arkintelligence.tool import ArkTool
 from arkintelligence.utils.logger import logger

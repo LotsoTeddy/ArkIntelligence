@@ -6,16 +6,20 @@ from arkintelligence.agent.ArkAgent import ArkAgent
 
 
 class ArkWorkflow:
-    """
-    ArkWorkFlow is a class that represents a workflow in the Ark Intelligence system.
-    It manages the execution of tasks and their dependencies.
+    """ArkWorkFlow is a class that represents a workflow in the Ark Intelligence system.
+
+    It manages the execution of tasks and their dependencies. The current workflow supports the following agent execution patterns:
+
+    - sequential
+    - parallel
+    - conditional
     """
 
     def __init__(
         self,
         name: str = "Unknown",
         description: str = "No description",
-        node_list: List[Union[ArkAgent, ArkWorkflow, Callable[..., Any]]] = [],
+        nodes: List[Union[ArkAgent, ArkWorkflow, Callable[..., Any]]] = [],
     ):
         """
         Initializes the ArkWorkFlow instance.
@@ -23,17 +27,13 @@ class ArkWorkflow:
         self.name = name
         self.description = description
 
-        # Note that the nodes are sequential
-        self.node_list = node_list
-
-        self.print()
+        self.nodes = nodes
 
     def run(self, prompt: str):
         """
         Runs the workflow.
         """
         tmp_input = prompt
-
 
     def add_node(self, node):
         """
