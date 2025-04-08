@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, List, Union
 
-from arkintelligence.agent.ArkAgent import ArkAgent
+from arkintelligence.workflow.ArkWorkflowNode import ArkWorkflowNode
 
 
 class ArkWorkflow:
@@ -19,7 +19,7 @@ class ArkWorkflow:
         self,
         name: str = "Unknown",
         description: str = "No description",
-        nodes: List[Union[ArkAgent, ArkWorkflow, Callable[..., Any]]] = [],
+        nodes: List[Union[ArkWorkflowNode, ArkWorkflow, Callable[..., Any]]] = [],
     ):
         """
         Initializes the ArkWorkFlow instance.
@@ -33,9 +33,17 @@ class ArkWorkflow:
         """
         Runs the workflow.
         """
-        tmp_input = prompt
+        for node in self.nodes:
+            if isinstance(node, ArkWorkflowNode):
+                node.run(prompt)
+            elif isinstance(node, ArkWorkflow):
+                node.run(prompt)
+            elif callable(node):
+                node(prompt)
+            else:
+                raise ValueError("Invalid node type in workflow")
 
-    def add_node(self, node):
+    def add_node(self, node: ArkWorkflowNode):
         """
         Adds a node to the workflow.
         """
