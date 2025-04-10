@@ -11,9 +11,11 @@ from openai import OpenAI
 
 
 @api_key_check
-def post_to_text_model(model: str, messages: List[dict], tools=[], **kwargs):
+def post_to_text_model(
+    model: str, base_url: str, messages: List[dict], tools=[], **kwargs
+):
     client = OpenAI(
-        base_url=MODEL_URL_MAPPING[model],
+        base_url=base_url,
         api_key=os.environ.get("ARK_API_KEY"),
     )
     response = client.chat.completions.create(
@@ -27,6 +29,7 @@ def post_to_text_model(model: str, messages: List[dict], tools=[], **kwargs):
 
 def post_to_vision_model(
     model: str,
+    base_url: str,
     messages: List[dict],
 ):
     headers = {
@@ -38,7 +41,7 @@ def post_to_vision_model(
         "content": messages,
     }
     response = requests.post(
-        url=MODEL_URL_MAPPING[model],
+        url=base_url,
         headers=headers,
         json=data,
     )

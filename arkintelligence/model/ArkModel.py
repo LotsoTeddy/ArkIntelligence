@@ -8,6 +8,7 @@ from arkintelligence.base.apis import (
     post_to_text_model,
     post_to_vision_model,
 )
+from arkintelligence.config.urls import TEXT_API_BASE_URL, VISION_API_BASE_URL
 from arkintelligence.utils.logger import logger
 from arkintelligence.utils.misc import encode_image, is_image
 
@@ -30,6 +31,7 @@ class ArkModel:
     def _chat(self, messages, **kwargs):
         response = post_to_text_model(
             model=self.model,
+            base_url=TEXT_API_BASE_URL,
             messages=messages,
             **kwargs,
         )
@@ -97,6 +99,7 @@ class ArkModel:
 
         response = post_to_text_model(
             model=self.model,
+            base_url=TEXT_API_BASE_URL,
             messages=messages,
         )
 
@@ -140,6 +143,7 @@ class ArkModel:
 
         response = post_to_vision_model(
             model=self.model,
+            base_url=VISION_API_BASE_URL,
             messages=messages,
         )
         task_id = response.json().get("id")
