@@ -167,6 +167,7 @@ class ArkModel:
     def invoke(self, messages: List = [], context: str = None):
         response = post_to_text_model(
             model=self.model,
+            base_url=TEXT_API_BASE_URL,
             messages=messages,
         )
         return response
@@ -176,6 +177,7 @@ class ArkModel:
     ):
         response = post_to_text_model(
             model=self.model,
+            base_url=TEXT_API_BASE_URL,
             messages=messages,
             tools=tools,
         )
