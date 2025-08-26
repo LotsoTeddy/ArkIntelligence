@@ -5,4 +5,4 @@ volcengine # support for volcano knowledge base
 llama-index
 # rich
 loguru
-volcengine-python-sdk[ark] # For ArkLLM
+volcengine-python-sdk[ark]
